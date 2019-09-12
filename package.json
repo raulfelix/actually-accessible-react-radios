@@ -1,0 +1,68 @@
+{
+  "name": "actually-accessible-react-radios",
+  "version": "1.0.1",
+  "description": "An accessible ReactJS radios buttons",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raulfelix/actually-accessible-react-radios.git"
+  },
+  "main": "dist/index.es.js",
+  "keywords": [
+    "switch",
+    "toggle",
+    "accessible",
+    "form"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.6.0",
+    "@babel/preset-env": "^7.6.0",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/preset-stage-2": "^7.0.0",
+    "@emotion/core": "^10.0.17",
+    "@emotion/styled": "^10.0.17",
+    "babel-eslint": "^10.0.3",
+    "babel-jest": "^24.9.0",
+    "babel-loader": "^8.0.6",
+    "babel-preset-react": "^6.24.1",
+    "emotion": "^10.0.17",
+    "enzyme": "^3.10.0",
+    "enzyme-adapter-react-16": "^1.14.0",
+    "eslint": "^6.3.0",
+    "eslint-loader": "^3.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.14.3",
+    "jest": "^24.9.0",
+    "mini-css-extract-plugin": "^0.8.0",
+    "prop-types": "^15.7.2",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-test-renderer": "^16.9.0",
+    "rollup": "^1.21.2",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "sass-loader": "^7.1.0",
+    "styled-components": "^4.3.2",
+    "webpack": "^4.39.3",
+    "webpack-cli": "^3.3.8",
+    "webpack-dev-server": "^3.8.0"
+  },
+  "peerDependencies": {
+    "prop-types": "^15.6.2",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "styled-components": ">= 2"
+  },
+  "scripts": {
+    "start": "webpack-dev-server --hot -wd",
+    "build": "rollup -c",
+    "test": "jest",
+    "lint": "eslint ./src/*/**"
+  },
+  "jest": {
+    "setupFilesAfterEnv": [
+      "<rootDir>/testSetup.js"
+    ]
+  }
+}
