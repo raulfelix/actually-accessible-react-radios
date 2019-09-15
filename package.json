@@ -1,15 +1,16 @@
 {
   "name": "actually-accessible-react-radios",
   "version": "1.0.1",
-  "description": "An accessible ReactJS radios buttons",
+  "description": "Accessible ReactJS radio group",
   "repository": {
     "type": "git",
     "url": "https://github.com/raulfelix/actually-accessible-react-radios.git"
   },
   "main": "dist/index.es.js",
   "keywords": [
-    "switch",
-    "toggle",
+    "radios",
+    "buttons",
+    "single select",
     "accessible",
     "form"
   ],
