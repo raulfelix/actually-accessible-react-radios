@@ -1,8 +1,13 @@
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import KEY_CODES from './KeyCodes';
 
+const RadioTitle = styled.div`
+  font-family: 'Rubik', Arial;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+`
 const RadioList = styled.ul`
   font-family: 'Rubik', Arial;
   list-style: none;
@@ -20,7 +25,7 @@ const RadioItem = styled.li`
 
   &.selectable__item--focus span {
     outline: 0;
-    box-shadow: rgba(17, 117, 181, 0.6) 0 0 0 3px;
+    box-shadow: rgb(106, 106, 106) 0px 0px 0px 2px inset, rgba(17, 117, 181, 0.6) 0 0 0 2px;
   }
 
   span {
@@ -55,208 +60,162 @@ const RadioItem = styled.li`
         transform: scale(0.55);
       }
     }
+    &.selectable__item--focus span {
+      outline: 0;
+      box-shadow: rgb(36, 75, 168) 0px 0px 0px 2px inset, rgba(17, 117, 181, 0.6) 0 0 0 2px;
+    }
+  ` }
+
+  ${({isDisabled}) => isDisabled && `
+    span {
+      opacity: 0.5;
+    }
   ` }
 `
 
-export default class RadioGroup extends React.Component {
-    constructor(props) {
-        super(props);
+const RadioGroup = ({ id, label = '', type = '', options, isLabelHidden, onSelect }) => {
+  const [activeId, setActiveId] = useState(null)
+  const [activeDescendent, setActiveDescendent] = useState(null)
+  const [focussed, setFocussed] = useState(null)
+  const [radios, setRadios] = useState([])
 
-        let activeId = null;
-        const options = [];
+  useEffect(function() {
+    const optionCopy = options.map(o => {
+      return {...o}
+    });
+    let active = optionCopy.find(o => o.isActive);
+    setActiveId(active ? active.value : null)
+    setActiveDescendent(active ? active.value : null)
+    setRadios(optionCopy)
+  }, [])
 
-        props.options.forEach((o) => {
-            options.push({
-                id: o.id,
-                label: o.label,
-                value: o.value,
-                isActive: o.isActive,
-                isDisabled: o.isDisabled
-            });
+  const labelId = `${id}_label`;
+  const classes = ['selectable radios'];
 
-            if (o.isActive) {
-                activeId = o.value;
-            }
+  if (type === 'button') {
+    classes.push('selectable--btn');
+  }
+
+  function getCSS(o) {
+    const classes = ['radios__item selectable__item'];
+    if (focussed === o.value) {
+      classes.push('selectable__item--focus');
+    }
+    if (o.isDisabled === true) {
+      classes.push('selectable__item--disabled');
+    }
+    return classes.join(' ');
+  }
+
+  function onRadioClick(o) {
+    setSelected(o.value);
+  }
+
+  function setSelected(id) {
+    const option = radios.find(o => o.value === id);
+    if (option.isDisabled !== true) {
+      setActiveId(id)
+      setActiveDescendent(id)
+      setFocussed(id)
+      if (onSelect) {
+        onSelect({
+          label: option.label,
+          value: option.value
         });
+      }
+    } else {
+      setFocussed(id)
+    }
+  }
 
-        this.state = {
-            activeId,
-            activedescendant: activeId,
-            focussed: null,
-            options
-        };
+  function onFocus() {
+    setFocussed(activeId === null ? radios[0].value : activeId)
+  }
+
+  function onKeydown(event) {
+    let preventDefaults = true;
+    switch (event.key) {
+      case KEY_CODES.SPACE:
+      case KEY_CODES.RETURN:
+        setSelected(focussed);
+        break;
+      case KEY_CODES.UP:
+      case KEY_CODES.LEFT:
+        setSelected(getPreviousItem(focussed));
+        break;
+      case KEY_CODES.DOWN:
+      case KEY_CODES.RIGHT:
+        setSelected(getNextItem(focussed));
+        break;
+      default:
+        preventDefaults = false;
+        break;
     }
 
-    onRadioClick(o) {
-        this.setSelected(o.value);
+    if (preventDefaults) {
+      event.stopPropagation();
+      event.preventDefault();
     }
+  }
 
-    onBlur() {
-        this.setState({
-            focussed: null
-        });
+  function getPreviousItem(id) {
+    const list = radios;
+    const index = radios.findIndex(o => o.value === id);
+    if (index === 0) {
+      return list[list.length - 1].value;
     }
+    return list[index - 1].value;
+  }
 
-    onFocus() {
-        const {
-            activeId,
-            options
-        } = this.state;
-
-        if (activeId === null) {
-            // activate first item
-            this.setState({
-                focussed: options[0].value
-            });
-        } else {
-            this.setState({
-                focussed: activeId
-            });
-        }
+  function getNextItem(id) {
+    const list = radios;
+    const index = radios.findIndex(o => o.value === id);
+    if (index === list.length - 1) {
+      return list[0].value;
     }
+    return list[index + 1].value;
+  }
 
-    onKeydown(event) {
-        let preventDefaults = true;
-        const {focussed} = this.state;
-
-        switch (event.key) {
-            case KEY_CODES.SPACE:
-            case KEY_CODES.RETURN:
-                this.setSelected(focussed);
-                break;
-            case KEY_CODES.UP:
-            case KEY_CODES.LEFT:
-                this.setSelected(this.getPreviousItem(focussed));
-                break;
-            case KEY_CODES.DOWN:
-            case KEY_CODES.RIGHT:
-                this.setSelected(this.getNextItem(focussed));
-                break;
-            default:
-                preventDefaults = false;
-                break;
-        }
-
-        if (preventDefaults) {
-            event.stopPropagation();
-            event.preventDefault();
-        }
-    }
-
-    getCSS(o) {
-        const classes = ['radios__item selectable__item'];
-
-        if (this.state.focussed === o.value) {
-            classes.push('selectable__item--focus');
-        }
-
-        if (o.isDisabled === true) {
-            classes.push('selectable__item--disabled');
-        }
-
-        return classes.join(' ');
-    }
-
-    getPreviousItem(id) {
-        const list = this.state.options;
-        const index = this.getIndex(id);
-        if (index === 0) {
-            return list[list.length - 1].value;
-        }
-        return list[index - 1].value;
-    }
-
-    getNextItem(id) {
-        const list = this.state.options;
-        const index = this.getIndex(id);
-        if (index === list.length - 1) {
-            return list[0].value;
-        }
-        return list[index + 1].value;
-    }
-
-    getIndex(id) {
-        return this.state.options.findIndex(o => o.value === id);
-    }
-
-    setSelected(id) {
-        const option = this.state.options.find(o => o.value === id);
-
-        if (option.isDisabled !== true) {
-            this.setState({
-                activeId: id,
-                activedescendant: id,
-                focussed: id
-            });
-
-            if (this.props.onSelect) {
-                this.props.onSelect({
-                    label: option.label,
-                    value: option.value
-                });
-            }
-        } else {
-            this.setState({
-                focussed: id
-            });
-        }
-    }
-
-    render() {
-        const {
-            id,
-            label,
-            type
-        } = this.props;
-        const labelId = `${id}_label`;
-        const classes = ['selectable radios'];
-
-        if (type === 'button') {
-            classes.push('selectable--btn');
-        }
-
-        return (
-          <>
-            <div
-              id={labelId}
-              className={`selectable__title ${this.props.isLabelHidden ? 'visually__hidden' : ''}`}
+  return (
+    <>
+      <RadioTitle
+        id={labelId}
+        className={`selectable__title ${isLabelHidden ? 'visually__hidden' : ''}`}
+      >
+        {label}
+      </RadioTitle>
+      <RadioList
+        id={id}
+        className={classes.join(' ')}
+        role="radiogroup"
+        aria-labelledby={labelId}
+        aria-activedescendant={`rb_${activeDescendent}`}
+        tabIndex="0"
+        onBlur={() => setFocussed(null)}
+        onFocus={() => onFocus()}
+        onKeyDown={e => onKeydown(e)}
+      >
+        {
+          radios.map(o => (
+            <RadioItem
+              key={o.value}
+              id={`rb_${o.value}`}
+              isActive={activeId === o.value}
+              isDisabled={o.isDisabled === true}
+              className={getCSS(o)}
+              role="radio"
+              aria-checked={activeId === o.value}
+              aria-disabled={o.isDisabled === true}
+              onClick={() => onRadioClick(o)}
             >
-              {label}
-            </div>
-            <RadioList
-                id={id}
-                className={classes.join(' ')}
-                role="radiogroup"
-                aria-labelledby={labelId}
-                aria-activedescendant={`rb_${this.state.activedescendant}`}
-                tabIndex="0"
-                onBlur={() => this.onBlur()}
-                onFocus={() => this.onFocus()}
-                onKeyDown={e => this.onKeydown(e)}
-              >
-                  {
-                      this.state.options.map(o => (
-                          <RadioItem
-                            key={o.value}
-                            id={`rb_${o.value}`}
-                            isActive={this.state.activeId === o.value}
-                            className={this.getCSS(o)}
-                            role="radio"
-                            aria-checked={this.state.activeId === o.value}
-                            aria-disabled={o.isDisabled === true}
-                            onClick={() => this.onRadioClick(o)}
-                          >
-                            <div>
-                              <span />
-                              {o.label}
-                            </div>
-                          </RadioItem>
-                      ))
-                  }
-            </RadioList>
-          </>
-        );
-    }
+              <span />
+              {o.label}
+          </RadioItem>
+        ))
+        }
+      </RadioList>
+    </>
+  )
 }
 
 RadioGroup.propTypes = {
@@ -272,3 +231,5 @@ RadioGroup.defaultProps = {
   isLabelHidden: false,
   type: ''
 };
+
+export default RadioGroup;
